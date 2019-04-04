@@ -288,7 +288,7 @@ func load(uri string, data []byte) (swagger *openapi3.Swagger, router *openapi3f
 	if !viper.GetBool("validate-server") {
 		// Clear the server list so no validation happens. Note: this has a side
 		// effect of no longer parsing any server-declared parameters.
-		swagger.Servers = make([]*openapi3.Server, 0)
+		addLocalServers(swagger)
 	} else {
 		// Special-case localhost to always be allowed for local testing.
 		if err = addLocalServers(swagger); err != nil {
@@ -490,13 +490,15 @@ func server(cmd *cobra.Command, args []string) {
 
 		if viper.GetBool("validate-server") {
 			// Use the scheme/host in the log message since we are validating it.
-			info = fmt.Sprintf("%s %v", req.Method, req.URL)
+			fmt.Printf("%s %v", req.Method, req.URL)
 		}
 
+		log.Printf("%s %v", req.Method, req.URL)
 		if viper.GetString("path-prefix") != "" {
 			req.URL.Path = strings.TrimPrefix(req.URL.Path, "/"+viper.GetString("path-prefix"))
 		}
 
+		log.Printf("%s %v", req.Method, req.URL)
 		route, pathParams, err := router.FindRoute(req.Method, req.URL)
 		if err != nil {
 			log.Printf("ERROR: %s => %v", info, err)
